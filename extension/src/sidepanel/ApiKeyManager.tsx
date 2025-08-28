@@ -6,19 +6,96 @@ interface ApiKey {
   key: string;
 }
 
+// ModelSelector Component
+interface ModelSelectorProps {
+  savedKeys: ApiKey[];
+  activeProvider: string;
+  onProviderChange: (provider: string) => void;
+}
+
+const ALL_PROVIDERS = ['openai', 'claude', 'gemini'];
+
+const ModelSelector: React.FC<ModelSelectorProps> = ({ savedKeys, activeProvider, onProviderChange }) => {
+  const getProviderName = (provider: string) => {
+    switch (provider) {
+      case 'openai': return 'OpenAI';
+      case 'claude': return 'Claude';
+      case 'gemini': return 'Gemini';
+      default: return provider;
+    }
+  };
+
+  const hasKeyForProvider = (provider: string) => {
+    return savedKeys.some(key => key.provider === provider);
+  };
+
+  return (
+    <div style={{
+      marginBottom: '24px',
+      padding: '16px',
+      border: '1px solid #e5e7eb',
+      borderRadius: '8px',
+      backgroundColor: '#f9fafb'
+    }}>
+      <label style={{
+        display: 'block',
+        marginBottom: '8px',
+        fontSize: '14px',
+        fontWeight: '500',
+        color: '#374151'
+      }}>
+        Active AI Model
+      </label>
+      <select
+        value={activeProvider}
+        onChange={(e) => onProviderChange(e.target.value)}
+        style={{
+          width: '100%',
+          padding: '8px 12px',
+          border: '1px solid #d1d5db',
+          borderRadius: '6px',
+          fontSize: '14px',
+          fontFamily: 'inherit',
+          backgroundColor: '#ffffff'
+        }}
+      >
+        {ALL_PROVIDERS.map((provider) => {
+          const hasKey = hasKeyForProvider(provider);
+          return (
+            <option
+              key={provider}
+              value={provider}
+              disabled={!hasKey}
+              style={{
+                color: hasKey ? '#374151' : '#9ca3af'
+              }}
+            >
+              {hasKey ? getProviderName(provider) : `${getProviderName(provider)} (No Key)`}
+            </option>
+          );
+        })}
+      </select>
+    </div>
+  );
+};
+
 const ApiKeyManager: React.FC = () => {
   const [apiKeys, setApiKeys] = useState<ApiKey[]>([]);
   const [newKey, setNewKey] = useState('');
   const [selectedProvider, setSelectedProvider] = useState<'openai' | 'claude' | 'gemini'>('openai');
+  const [activeProvider, setActiveProvider] = useState<string>('openai');
   const [isLoading, setIsLoading] = useState(true);
 
   // Load API keys from Chrome storage on component mount
   useEffect(() => {
     const loadApiKeys = async () => {
       try {
-        const result = await chrome.storage.local.get(['apiKeys']);
+        const result = await chrome.storage.local.get(['apiKeys', 'activeProvider']);
         if (result.apiKeys) {
           setApiKeys(result.apiKeys);
+        }
+        if (result.activeProvider) {
+          setActiveProvider(result.activeProvider);
         }
       } catch (error) {
         console.error('Error loading API keys:', error);
@@ -65,6 +142,16 @@ const ApiKeyManager: React.FC = () => {
       await chrome.storage.local.set({ apiKeys: updatedKeys });
     } catch (error) {
       console.error('Error deleting API key:', error);
+    }
+  };
+
+  // Handle provider change
+  const handleProviderChange = async (provider: string) => {
+    setActiveProvider(provider);
+    try {
+      await chrome.storage.local.set({ activeProvider: provider });
+    } catch (error) {
+      console.error('Error saving active provider:', error);
     }
   };
 
@@ -211,6 +298,13 @@ const ApiKeyManager: React.FC = () => {
       }}>
         API Key Management
       </h2>
+
+      {/* Model Selector */}
+      <ModelSelector
+        savedKeys={apiKeys}
+        activeProvider={activeProvider}
+        onProviderChange={handleProviderChange}
+      />
 
       {/* Add New Key Form */}
       <div style={{

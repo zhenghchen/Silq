@@ -1,6 +1,73 @@
 import { useState, useRef, useEffect } from 'react';
 import SettingsPage from './SettingsPage.tsx';
 
+interface ApiKey {
+  id: string;
+  provider: 'openai' | 'claude' | 'gemini';
+  key: string;
+}
+
+// ModelSelector Component
+interface ModelSelectorProps {
+  savedKeys: ApiKey[];
+  activeProvider: string;
+  onProviderChange: (provider: string) => void;
+}
+
+const ALL_PROVIDERS = ['openai', 'claude', 'gemini'];
+
+const ModelSelector: React.FC<ModelSelectorProps> = ({ savedKeys, activeProvider, onProviderChange }) => {
+  const getProviderName = (provider: string) => {
+    switch (provider) {
+      case 'openai': return 'OpenAI';
+      case 'claude': return 'Claude';
+      case 'gemini': return 'Gemini';
+      default: return provider;
+    }
+  };
+
+  const hasKeyForProvider = (provider: string) => {
+    return savedKeys.some(key => key.provider === provider);
+  };
+
+  return (
+    <select
+      value={activeProvider}
+      onChange={(e) => onProviderChange(e.target.value)}
+      style={{
+        position: 'absolute',
+        left: '8px',
+        bottom: '8px',
+        padding: '4px 8px',
+        border: 'none',
+        borderRadius: '4px',
+        fontSize: '11px',
+        fontFamily: 'inherit',
+        backgroundColor: 'rgba(255, 255, 255, 0.9)',
+        color: '#374151',
+        minWidth: '80px',
+        zIndex: 1
+      }}
+    >
+      {ALL_PROVIDERS.map((provider) => {
+        const hasKey = hasKeyForProvider(provider);
+        return (
+          <option
+            key={provider}
+            value={provider}
+            disabled={!hasKey}
+            style={{
+              color: hasKey ? '#374151' : '#9ca3af'
+            }}
+          >
+            {hasKey ? getProviderName(provider) : `${getProviderName(provider)} (No Key)`}
+          </option>
+        );
+      })}
+    </select>
+  );
+};
+
 interface Message {
   id: string;
   role: 'user' | 'assistant';
@@ -13,6 +80,8 @@ const SidePanel: React.FC = () => {
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [currentView, setCurrentView] = useState<'chat' | 'settings'>('chat');
+  const [savedKeys, setSavedKeys] = useState<ApiKey[]>([]);
+  const [activeProvider, setActiveProvider] = useState<string>('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
@@ -23,6 +92,26 @@ const SidePanel: React.FC = () => {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  // Load API keys from Chrome storage
+  useEffect(() => {
+    const loadApiKeys = async () => {
+      try {
+        const result = await chrome.storage.local.get(['apiKeys']);
+        if (result.apiKeys) {
+          setSavedKeys(result.apiKeys);
+          // Set active provider to the first available key
+          if (result.apiKeys.length > 0) {
+            setActiveProvider(result.apiKeys[0].provider);
+          }
+        }
+      } catch (error) {
+        console.error('Error loading API keys:', error);
+      }
+    };
+
+    loadApiKeys();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -279,6 +368,11 @@ const SidePanel: React.FC = () => {
             backgroundColor: '#ffffff',
             transition: 'border-color 0.2s ease'
           }}>
+            <ModelSelector
+              savedKeys={savedKeys}
+              activeProvider={activeProvider}
+              onProviderChange={setActiveProvider}
+            />
             <textarea
               ref={inputRef}
               value={inputValue}
