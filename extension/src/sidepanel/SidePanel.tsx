@@ -93,16 +93,18 @@ const SidePanel: React.FC = () => {
     scrollToBottom();
   }, [messages]);
 
-  // Load API keys from Chrome storage
+  // Load API keys from Chrome storage and listen for changes
   useEffect(() => {
     const loadApiKeys = async () => {
       try {
-        const result = await chrome.storage.local.get(['apiKeys']);
+        const result = await chrome.storage.local.get(['apiKeys', 'activeProvider']);
         if (result.apiKeys) {
           setSavedKeys(result.apiKeys);
-          // Set active provider to the first available key
-          if (result.apiKeys.length > 0) {
+          // Set active provider to the first available key if none is set
+          if (result.apiKeys.length > 0 && !result.activeProvider) {
             setActiveProvider(result.apiKeys[0].provider);
+          } else if (result.activeProvider) {
+            setActiveProvider(result.activeProvider);
           }
         }
       } catch (error) {
@@ -110,8 +112,35 @@ const SidePanel: React.FC = () => {
       }
     };
 
+    // Load initial data
     loadApiKeys();
-  }, []);
+
+    // Listen for storage changes
+    const handleStorageChange = (changes: { [key: string]: chrome.storage.StorageChange }) => {
+      if (changes.apiKeys) {
+        setSavedKeys(changes.apiKeys.newValue || []);
+        // Update active provider if current one is no longer available
+        if (changes.apiKeys.newValue && changes.apiKeys.newValue.length > 0) {
+          const currentProviderExists = changes.apiKeys.newValue.some((key: ApiKey) => key.provider === activeProvider);
+          if (!currentProviderExists) {
+            setActiveProvider(changes.apiKeys.newValue[0].provider);
+          }
+        } else {
+          setActiveProvider('');
+        }
+      }
+      if (changes.activeProvider) {
+        setActiveProvider(changes.activeProvider.newValue || '');
+      }
+    };
+
+    chrome.storage.onChanged.addListener(handleStorageChange);
+
+    // Cleanup listener on unmount
+    return () => {
+      chrome.storage.onChanged.removeListener(handleStorageChange);
+    };
+  }, [activeProvider]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -128,13 +157,42 @@ const SidePanel: React.FC = () => {
     setInputValue('');
     setIsLoading(true);
 
-    // TODO: Replace with actual AI API call
+    // Find the API key for the active provider
+    const apiKey = savedKeys.find(key => key.provider === activeProvider);
+
+    if (!apiKey) {
+      // Error handling: No API key found for active provider
+      const getProviderName = (provider: string) => {
+        switch (provider) {
+          case 'openai': return 'OpenAI';
+          case 'claude': return 'Claude';
+          case 'gemini': return 'Gemini';
+          default: return provider;
+        }
+      };
+
+      const errorMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        content: `API key for ${getProviderName(activeProvider)} not found. Please add an API key in the settings.`,
+        timestamp: new Date()
+      };
+      setMessages(prev => [...prev, errorMessage]);
+      setIsLoading(false);
+      return;
+    }
+
+    // Confirm logic: Log the provider and key
+    console.log('Provider:', activeProvider);
+    console.log('API Key:', apiKey.key);
+
+    // TODO: Add actual AI API call here
     // For now, simulate a response
     setTimeout(() => {
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: 'This is a placeholder response. The AI API integration will be added next.',
+        content: `Using ${activeProvider} API. This is a placeholder response. The AI API integration will be added next.`,
         timestamp: new Date()
       };
       setMessages(prev => [...prev, assistantMessage]);
