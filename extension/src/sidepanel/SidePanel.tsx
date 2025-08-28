@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import SettingsPage from './SettingsPage.tsx';
 
 interface Message {
   id: string;
@@ -11,6 +12,7 @@ const SidePanel: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [currentView, setCurrentView] = useState<'chat' | 'settings'>('chat');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
@@ -75,26 +77,79 @@ const SidePanel: React.FC = () => {
         borderBottom: '1px solid #e5e7eb',
         backgroundColor: '#f9fafb',
         display: 'flex',
-        alignItems: 'center'
+        alignItems: 'center',
+        justifyContent: 'space-between'
       }}>
-        <img 
-          src="icons/logo-header.png" 
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <img
+            src="icons/logo-header.png"
+            style={{
+              width: '24px',
+              height: '24px'
+            }}
+          />
+        </div>
+        <button
+          onClick={() => setCurrentView(currentView === 'chat' ? 'settings' : 'chat')}
           style={{
-            width: '24px',
-            height: '24px'
+            padding: '8px',
+            border: 'none',
+            borderRadius: '6px',
+            backgroundColor: 'transparent',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            transition: 'background-color 0.2s ease'
           }}
-        />
+          onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#f3f4f6'}
+          onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+        >
+          {currentView === 'chat' ? (
+            // Gear/Settings Icon for Chat view
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="#6b7280"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <circle cx="12" cy="12" r="3" />
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+    </svg>
+          ) : (
+            // Back Arrow Icon for Settings view
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="#6b7280"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M19 12H5M12 19l-7-7 7-7" />
+            </svg>
+          )}
+        </button>
       </div>
 
-      {/* Messages Container */}
-      <div style={{
-        flex: '1',
-        overflowY: 'auto',
-        padding: '16px',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '16px'
-      }}>
+      {/* Content Area */}
+      {currentView === 'chat' ? (
+        <>
+          {/* Messages Container */}
+          <div style={{
+            flex: '1',
+            overflowY: 'auto',
+            padding: '16px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '16px'
+          }}>
         {messages.length === 0 && (
           <div style={{
             display: 'flex',
@@ -113,8 +168,8 @@ const SidePanel: React.FC = () => {
               alignItems: 'center',
               justifyContent: 'center'
             }}>
-              <img 
-                src="icons/logo-welcome.png" 
+              <img
+                src="icons/logo-welcome.png"
                 style={{
                   width: '48px',
                   height: '48px'
@@ -280,6 +335,10 @@ const SidePanel: React.FC = () => {
           </div>
         </form>
       </div>
+        </>
+      ) : (
+        <SettingsPage />
+      )}
 
       <style>{`
         @keyframes spin {
