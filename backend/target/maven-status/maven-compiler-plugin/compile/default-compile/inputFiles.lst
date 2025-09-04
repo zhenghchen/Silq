@@ -1,0 +1,12 @@
+/Users/zhengchen/GitHub/silq_ai/backend/src/main/java/com/silq/ai/backend/dto/ChatResponse.java
+/Users/zhengchen/GitHub/silq_ai/backend/src/main/java/com/silq/ai/backend/config/RestTemplateConfig.java
+/Users/zhengchen/GitHub/silq_ai/backend/src/main/java/com/silq/ai/backend/SilqAiBackendApplication.java
+/Users/zhengchen/GitHub/silq_ai/backend/src/main/java/com/silq/ai/backend/services/ChatService.java
+/Users/zhengchen/GitHub/silq_ai/backend/src/main/java/com/silq/ai/backend/services/llm/LLMProxyFactory.java
+/Users/zhengchen/GitHub/silq_ai/backend/src/main/java/com/silq/ai/backend/services/llm/LLMService.java
+/Users/zhengchen/GitHub/silq_ai/backend/src/main/java/com/silq/ai/backend/controller/LLMController.java
+/Users/zhengchen/GitHub/silq_ai/backend/src/main/java/com/silq/ai/backend/dto/ChatRequest.java
+/Users/zhengchen/GitHub/silq_ai/backend/src/main/java/com/silq/ai/backend/services/llm/OpenAIService.java
+/Users/zhengchen/GitHub/silq_ai/backend/src/main/java/com/silq/ai/backend/controller/HealthController.java
+/Users/zhengchen/GitHub/silq_ai/backend/src/main/java/com/silq/ai/backend/controllers/ChatController.java
+/Users/zhengchen/GitHub/silq_ai/backend/src/main/java/com/silq/ai/backend/services/llm/GeminiService.java
