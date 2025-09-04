@@ -186,18 +186,45 @@ const SidePanel: React.FC = () => {
     console.log('Provider:', activeProvider);
     console.log('API Key:', apiKey.key);
 
-    // TODO: Add actual AI API call here
-    // For now, simulate a response
-    setTimeout(() => {
+    // Make API call to our backend
+    try {
+      const response = await fetch('http://localhost:8080/api/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          provider: activeProvider,
+          prompt: userMessage.content,
+          apiKey: apiKey.key
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: `Using ${activeProvider} API. This is a placeholder response. The AI API integration will be added next.`,
+        content: data.content,
         timestamp: new Date()
       };
       setMessages(prev => [...prev, assistantMessage]);
+    } catch (error) {
+      console.error('Error calling AI API:', error);
+      const errorMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        content: `Error: Failed to get AI response. Please check your API key and try again.`,
+        timestamp: new Date()
+      };
+      setMessages(prev => [...prev, errorMessage]);
+    } finally {
       setIsLoading(false);
-    }, 1000);
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
