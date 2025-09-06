@@ -4,11 +4,13 @@
   "description": "AI-powered writing assistant Chrome extension",
   "type": "module",
   "scripts": {
-    "dev": "vite build --watch --mode development",
-    "build": "vite build",
-    "preview": "vite preview"
-  },
+  "build": "vite build",
+  "clean": "npx del-cli dist/popup.* dist/background.* dist/content-script.* dist/client.*",
+  "deploy": "npm run build && npm run clean && clasp push"
+},
+
   "dependencies": {
+    "clasp": "^1.0.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },
@@ -18,6 +20,7 @@
     "@types/react": "^18.2.43",
     "@types/react-dom": "^18.2.17",
     "@vitejs/plugin-react": "^4.2.1",
+    "del-cli": "^6.0.0",
     "typescript": "^5.2.2",
     "vite": "^5.0.8"
   }

@@ -1,0 +1,25 @@
+{
+    "timeZone": "America/New_York",
+    "dependencies": {},
+    "exceptionLogging": "STACKDRIVER",
+    "runtimeVersion": "V8",
+    "oauthScopes": [
+      "https://www.googleapis.com/auth/script.container.ui",
+      "https://www.googleapis.com/auth/documents",
+      "https://www.googleapis.com/auth/documents.currentonly"
+    ],
+    "addOns": {
+      "common": {
+        "name": "Silq AI",
+        "logoUrl": "https://www.gstatic.com/images/icons/material/system/1x/translate_black_24dp.png",
+        "layoutProperties": {
+          "primaryColor": "#7c3aed"
+        }
+      },
+      "docs": {
+        "homepageTrigger": {
+          "runFunction": "showSidebar"
+        }
+      }
+    }
+  }

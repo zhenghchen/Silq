@@ -1,0 +1,23 @@
+# Chrome extension files (not needed for Google Apps Script)
+popup.html
+popup.js
+background.js
+content-script.js
+client.js
+sidepanel.js
+manifest.json
+icons/
+*.map
+
+# Source files (only need compiled dist files)
+src/
+node_modules/
+package.json
+package-lock.json
+pnpm-lock.yaml
+tsconfig.json
+vite.config.ts
+
+# Other files
+.git/
+README.md
